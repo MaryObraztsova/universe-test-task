@@ -1,8 +1,8 @@
-// import * as Sentry from "@sentry/react"
 import "../src/styles/index.scss";
 import { appWithTranslation } from "next-i18next";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import Script from "next/script";
 import React from "react";
 
 const App = ({ Component, pageProps }: AppProps) => {
@@ -17,7 +17,7 @@ const App = ({ Component, pageProps }: AppProps) => {
         <meta property="og:image" content="/assets/img/og_image.jpg" />
 
         {/* @NOTE: required to improve performance of foxitpdf */}
-        <script src="/lib/preload-jr-worker.js" defer />
+        <Script src="/lib/preload-jr-worker.js" defer />
       </Head>
       <Component {...pageProps} />
     </>
