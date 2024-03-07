@@ -7,12 +7,12 @@ import green_check_b from "./assets/green-check-b.svg";
 import radio_off from "./assets/radio-off.svg";
 import radio_on from "./assets/radio-on.svg";
 import stars_doc_b from "./assets/stars_document-b.svg";
-import { IPaymentPageInteractor, InternalFileType } from "./interactor";
 import classNames from "classnames";
 import { useTranslation } from "next-i18next";
 import Head from "next/head";
 import Image from "next/image";
 import React from "react";
+import { InternalFileType, IPaymentPageInteractor } from './interface';
 
 const BannerYourDocIsReady: React.FC<{}> = () => {
   const { t } = useTranslation();
