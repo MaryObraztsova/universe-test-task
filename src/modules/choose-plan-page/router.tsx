@@ -276,7 +276,9 @@ export const PaymentPageRouter: React.FC<IProps> = ({ interactor, header }) => {
                               className="text-[14px] tablet:text-[16px] leading-[18px] tablet:leading-[24px] font-[600] mb-3 last:mb-0 flex gap-x-2 mobile:items-center"
                             >
                               <Image src={point.imgSrc} alt="point" />
-                              {point.bullText}
+                              <span className={point.bullClassName}>
+                                {point.bullText}
+                              </span>
                             </li>
                           ))}
                         </ul>

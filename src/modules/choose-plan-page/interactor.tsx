@@ -37,6 +37,7 @@ export const usePaymentPageInteractor = ({
     PaymentPlanId.MONTHLY_FULL
   );
   const [file, setFile] = React.useState<ApiFile>();
+  // TODO: incapsulate PDf and FileLink into separate hooks 
   const [imagePDF, setImagePDF] = React.useState<Blob | null>(null);
   const [isImageLoading, setIsImageLoading] = React.useState(false);
   const [fileLink, setFileLink] = React.useState<string | null>(null);
@@ -229,7 +230,6 @@ export const usePaymentPageInteractor = ({
     isRemoteConfigLoading,
 
     getPlans,
-    // todo products null
     isPlansLoading: products.length === 0,
   };
 };

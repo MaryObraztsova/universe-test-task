@@ -1,10 +1,12 @@
+import { TFunction } from 'i18next';
 import { RemoteConfig } from '../../providers/remote-config-provider';
 import { User } from '../../providers/user-provider';
 import { PaymentPlanId, Product } from '../../use-cases/get-subscription-products';
 
-type Bullets = {
+export type Bullet = {
   imgSrc: string;
-  bullText: JSX.Element;
+  bullText: JSX.Element | string;
+  bullClassName?: string;
 };
 
 export interface Plan {
@@ -12,8 +14,8 @@ export interface Plan {
   title: string;
   price: string;
   date: string | null;
-  bullets: Bullets[];
-  bulletsC?: Bullets[];
+  bullets: Bullet[];
+  bulletsC?: Bullet[];
   text: string | JSX.Element;
   formattedCurrency?: string;
   fullPrice?: string;
@@ -29,4 +31,4 @@ export type GetPlanHookArguments = {
   products: Product[];
 }
 
-export type GetPlansHook = (args: GetPlanHookArguments) => (t: (key: string) => string) => Plan[]
+export type GetPlansHook = (args: GetPlanHookArguments) => (t: TFunction) => Plan[]
