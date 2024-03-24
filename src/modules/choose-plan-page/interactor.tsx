@@ -102,62 +102,6 @@ export const usePaymentPageInteractor = ({
     router.push({ pathname: `${PAGE_LINKS.PAYMENT}`, query: router.query });
   };
 
-  React.useEffect(() => {
-    if (user?.subscription !== null) {
-      router.push(`${PAGE_LINKS.DASHBOARD}`);
-    }
-
-    if (!user?.email) {
-      router.back();
-
-      return;
-    }
-
-    if (user?.email !== null) {
-      return;
-    }
-
-    if (router.query?.token) {
-      API.auth.byEmailToken(router.query.token as string);
-    }
-  }, [user?.subscription, user?.email, router.query?.token]);
-
-  // @NOTE: analytics on page rendered
-  React.useEffect(() => {
-    if (!localStorage.getItem("select_plan_view")) {
-      console.log("send event analytic3");
-    }
-
-    localStorage.setItem("select_plan_view", "true");
-
-    return () => {
-      localStorage.removeItem("select_plan_view");
-    };
-  }, []);
-
-  React.useEffect(() => {
-    API.files.getFiles().then((res) => {
-      if (router.query?.file) {
-        const chosenFile = res.files.find(
-          (item) => item.id === router.query!.file
-        );
-
-        setFile(chosenFile);
-
-        return;
-      }
-      setFile(res.files[res.files.length - 1]);
-    });
-  }, []);
-
-  // @NOTE: setting pre-select plan for users from remarketing emails
-  React.useEffect(() => {
-    if (router.query?.fromEmail === "true") {
-      setSelectedPlan(PaymentPlanId.MONTHLY_FULL_SECOND_EMAIL);
-      return;
-    }
-  }, [abTests]);
-
   // @NOTE: generating cover for pdf-documents
   const loadPdfCover = async (): Promise<void> => {
     if (!file || file.internal_type !== "PDF") {
@@ -219,11 +163,6 @@ export const usePaymentPageInteractor = ({
 
     setFileLink(fileUrl);
   };
-
-  React.useEffect(() => {
-    loadPdfCover();
-    loadImageCover();
-  }, [loadImageCover, loadPdfCover]);
 
   const getPlans = (t: (key: string) => string): Plan[] => {
     const getTrialFormattedPrice = (price: number, currency: string) => {
@@ -463,6 +402,69 @@ export const usePaymentPageInteractor = ({
       },
     ];
   };
+
+  React.useEffect(() => {
+    if (user?.subscription !== null) {
+      router.push(`${PAGE_LINKS.DASHBOARD}`);
+    }
+
+    if (!user?.email) {
+      router.back();
+
+      return;
+    }
+
+    if (user?.email !== null) {
+      return;
+    }
+
+    if (router.query?.token) {
+      API.auth.byEmailToken(router.query.token as string);
+    }
+  }, [user?.subscription, user?.email, router.query?.token]);
+  
+
+    // @NOTE: analytics on page rendered
+  React.useEffect(() => {
+    if (!localStorage.getItem("select_plan_view")) {
+      console.log("send event analytic3");
+    }
+
+    localStorage.setItem("select_plan_view", "true");
+
+    return () => {
+      localStorage.removeItem("select_plan_view");
+    };
+  }, []);
+
+
+  React.useEffect(() => {
+    API.files.getFiles().then((res) => {
+      if (router.query?.file) {
+        const chosenFile = res.files.find(
+          (item) => item.id === router.query!.file
+        );
+
+        setFile(chosenFile);
+
+        return;
+      }
+      setFile(res.files[res.files.length - 1]);
+    });
+  }, []);
+
+  // @NOTE: setting pre-select plan for users from remarketing emails
+  React.useEffect(() => {
+    if (router.query?.fromEmail === "true") {
+      setSelectedPlan(PaymentPlanId.MONTHLY_FULL_SECOND_EMAIL);
+      return;
+    }
+  }, [abTests]);
+
+  React.useEffect(() => {
+    loadPdfCover();
+    loadImageCover();
+  }, [loadImageCover, loadPdfCover]);
 
   return {
     selectedPlan,
