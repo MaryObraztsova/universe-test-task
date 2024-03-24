@@ -12,3 +12,4 @@ export const interactorImagesFormat = [
   InternalFileType.JPG,
   InternalFileType.JPEG,
 ] as const satisfies InternalFileType[];
+

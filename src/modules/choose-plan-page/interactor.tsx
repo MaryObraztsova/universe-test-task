@@ -4,64 +4,43 @@ import { generatePDFCover } from "../../use-cases/generate-pdf-cover";
 import {
   PaymentPlanId,
 } from "../../use-cases/get-subscription-products";
-import check from "./assets/check.svg";
-import cross from "./assets/cross.svg";
 import { useRouter } from "next/router";
 import React from "react";
-import { PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook } from './interactor.types';
+import { GetPlansHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
 import { InternalFileType } from '../../shared/types';
-
-export enum PAGE_LINKS {
-  MAIN = "/",
-  PAYMENT = "/payment",
-  DASHBOARD = "/dashboard",
-}
-
-
-
-export type Bullets = {
-  imgSrc: string;
-  bullText: JSX.Element;
-};
-
-export interface Plan {
-  id: PaymentPlanId;
-  title: string;
-  price: string;
-  date: string | null;
-  bullets: Bullets[];
-  bulletsC?: Bullets[];
-  text: string | JSX.Element;
-  formattedCurrency?: string;
-  fullPrice?: string;
-}
+import { PageLinks } from '../../shared/routes';
 
 
 type UsePaymentPageInteractorArguments = {
+  imagesFormat: InternalFileType[];
 	useSubscriptionProductsHook: PaymentSubscriptionProductsHook;
 	useUserHook: PaymentUserHook;
 	useRemoteConfigHook: PaymentRemoteConfigHook;
-  imagesFormat: InternalFileType[];
+  useGetPlansHook: GetPlansHook;
 };
 
 export const usePaymentPageInteractor = ({
 	useSubscriptionProductsHook,
 	useUserHook,
 	useRemoteConfigHook,
+  useGetPlansHook,
   imagesFormat,
 }: UsePaymentPageInteractorArguments) => {
   const router = useRouter();
+
+  const { products } = useSubscriptionProductsHook();
+  const  user  = useUserHook();
+  const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
+  
+  // use query param as selected plan
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
     PaymentPlanId.MONTHLY_FULL
   );
-  const { products } = useSubscriptionProductsHook();
-  const  user  = useUserHook();
   const [file, setFile] = React.useState<ApiFile>();
   const [imagePDF, setImagePDF] = React.useState<Blob | null>(null);
   const [isImageLoading, setIsImageLoading] = React.useState(false);
   const [fileLink, setFileLink] = React.useState<string | null>(null);
 
-  const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
 
   const onCommentsFlip = () => {
     console.log("send event analytic0");
@@ -99,7 +78,7 @@ export const usePaymentPageInteractor = ({
 
     localStorage.setItem("selectedPlan", selectedPlan);
 
-    router.push({ pathname: `${PAGE_LINKS.PAYMENT}`, query: router.query });
+    router.push({ pathname: `${PageLinks.PAYMENT}`, query: router.query });
   };
 
   // @NOTE: generating cover for pdf-documents
@@ -164,248 +143,11 @@ export const usePaymentPageInteractor = ({
     setFileLink(fileUrl);
   };
 
-  const getPlans = (t: (key: string) => string): Plan[] => {
-    const getTrialFormattedPrice = (price: number, currency: string) => {
-      if (currency === "USD") {
-        return `$${price / 100}`;
-      }
-
-      if (currency === "GBP") {
-        return `£${price / 100}`;
-      }
-
-      return `€${price / 100}`;
-    };
-
-    const getAnnualFormattedPrice = (price: number, currency: string) => {
-      if (price === 19900) {
-        return `€${price / 100 / 12}`;
-      }
-      if (currency === "USD") {
-        return `$${price / 100 / 12}`;
-      }
-
-      if (currency === "GBP") {
-        return `$${price / 100 / 12}`;
-      }
-      return `€${price / 100 / 12}`;
-    };
-
-    const getCurrency = (currency: string) => {
-      if (currency === "USD") {
-        return "$";
-      }
-
-      if (currency === "GBP") {
-        return "£";
-      }
-
-      return "€";
-    };
-
-    return [
-      {
-        id: products[0]?.name as PaymentPlanId,
-        title: t("payment_page.plans.monthly.title"),
-        price: getTrialFormattedPrice(
-          products[0]?.price!.trial_price!,
-          products[0]?.price!.currency
-        ),
-        fullPrice: getTrialFormattedPrice(
-          products[0]?.price?.price,
-          products[0]?.price?.currency
-        ),
-        formattedCurrency: getCurrency(products[0]?.price.currency),
-        date: null,
-        bullets: [
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.monthly.bullet1")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.monthly.bullet2")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.monthly.bullet3")}</span>,
-          },
-          {
-            imgSrc: cross,
-            bullText: (
-              <span className="text-[#878787]">
-                {t("payment_page.plans.monthly.bullet4")}
-              </span>
-            ),
-          },
-          {
-            imgSrc: cross,
-            bullText: (
-              <span className="text-[#878787]">
-                {t("payment_page.plans.monthly.bullet5")}
-              </span>
-            ),
-          },
-          {
-            imgSrc: cross,
-            bullText: (
-              <span className="text-[#878787]">
-                {t("payment_page.plans.monthly.bullet6")}
-              </span>
-            ),
-          },
-          {
-            imgSrc: cross,
-            bullText: (
-              <span className="text-[#878787]">
-                {t("payment_page.plans.monthly.bullet7")}
-              </span>
-            ),
-          },
-          {
-            imgSrc: cross,
-            bullText: (
-              <span className="text-[#878787]">
-                {t("payment_page.plans.monthly.bullet8")}
-              </span>
-            ),
-          },
-        ],
-        //@ts-ignore
-        text: t("payment_page.plans.monthly.text", {
-          formattedPrice: getTrialFormattedPrice(
-            products[0]?.price?.price,
-            products[0]?.price?.currency
-          ),
-        }),
-      },
-      {
-        id: products[1]?.name as PaymentPlanId,
-        title: t("payment_page.plans.monthly_full.title"),
-        price: getTrialFormattedPrice(
-          products[1]?.price?.trial_price!,
-          products[1]?.price?.currency
-        ),
-        fullPrice: getTrialFormattedPrice(
-          products[1]?.price?.price,
-          products[1]?.price?.currency
-        ),
-        formattedCurrency: getCurrency(products[1]?.price.currency),
-        date: null,
-        bullets: [
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet1")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet2")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet3")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet4")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet5")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet6")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet7")}</span>
-            ),
-          },
-          {
-            imgSrc: check,
-            bullText: (
-              <span>{t("payment_page.plans.monthly_full.bullet8")}</span>
-            ),
-          },
-        ],
-        // @ts-ignore
-        text: t("payment_page.plans.monthly_full.text", {
-          formattedPrice: getTrialFormattedPrice(
-            products[1]?.price?.price,
-            products[1]?.price?.currency
-          ),
-        }),
-      },
-      {
-        id: products[2]?.name as PaymentPlanId,
-        title: t("payment_page.plans.annual.title"),
-        price: getAnnualFormattedPrice(
-          products[2]?.price?.price,
-          products[2]?.price?.currency
-        ),
-        date: t("payment_page.plans.annual.date"),
-        bullets: [
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet1")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet2")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet3")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet4")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet5")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet6")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet7")}</span>,
-          },
-          {
-            imgSrc: check,
-            bullText: <span>{t("payment_page.plans.annual.bullet8")}</span>,
-          },
-        ],
-        // @ts-ignore
-        text: t("payment_page.plans.annual.text", {
-          formattedPrice: getTrialFormattedPrice(
-            products[2]?.price?.price,
-            products[2]?.price?.currency
-          ),
-        }),
-      },
-    ];
-  };
+  const getPlans = useGetPlansHook({ products });
 
   React.useEffect(() => {
     if (user?.subscription !== null) {
-      router.push(`${PAGE_LINKS.DASHBOARD}`);
+      router.push(`${PageLinks.DASHBOARD}`);
     }
 
     if (!user?.email) {
@@ -487,6 +229,7 @@ export const usePaymentPageInteractor = ({
     isRemoteConfigLoading,
 
     getPlans,
+    // todo products null
     isPlansLoading: products.length === 0,
   };
 };
