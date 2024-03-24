@@ -161,7 +161,7 @@ const handleUpdatePlanQueryValue = useCallback(async (plan: PaymentPlanId) => {
     }
 
     handleUpdatePlanQueryValue(PaymentPlanId.MONTHLY_FULL)
-  }, [abTests]);
+  }, [abTests, handleUpdatePlanQueryValue]);
 
   return {
     selectedPlan,
