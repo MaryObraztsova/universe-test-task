@@ -36,27 +36,7 @@ export interface Plan {
   fullPrice?: string;
 }
 
-export interface IPaymentPageInteractor {
-  selectedPlan: PaymentPlanId;
-  onSelectPlan: (plan: PaymentPlanId) => void;
-  onContinue: (place?: string) => void;
-  onCommentsFlip: () => void;
 
-  imagePDF: Blob | null;
-  isImageLoading: boolean;
-  fileType: string | null;
-  fileLink: string | null;
-
-  isEditorFlow: boolean;
-  isSecondEmail: boolean;
-  isThirdEmail: boolean;
-
-  isRemoteConfigLoading: boolean;
-  fileName: string | null;
-
-  getPlans: (t: (key: string) => string) => Plan[];
-  isPlansLoading: boolean;
-}
 type UsePaymentPageInteractorArguments = {
 	useSubscriptionProductsHook: PaymentSubscriptionProductsHook;
 	useUserHook: PaymentUserHook;
@@ -69,7 +49,7 @@ export const usePaymentPageInteractor = ({
 	useUserHook,
 	useRemoteConfigHook,
   imagesFormat,
-}: UsePaymentPageInteractorArguments): IPaymentPageInteractor => {
+}: UsePaymentPageInteractorArguments) => {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
     PaymentPlanId.MONTHLY_FULL
@@ -508,3 +488,6 @@ export const usePaymentPageInteractor = ({
     isPlansLoading: products.length === 0,
   };
 };
+
+
+export type IPaymentPageInteractor = ReturnType<typeof usePaymentPageInteractor>;
