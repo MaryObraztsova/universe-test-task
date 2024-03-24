@@ -57,7 +57,9 @@ const handleUpdatePlanQueryValue = useCallback(async (plan: PaymentPlanId) => {
       [SELECTED_PLAN_SEARCH_KEY]: plan
     }
   })
-},[]);
+},[
+  router
+]);
 
   const onCommentsFlip = () => {
     console.log("send event analytic0");
