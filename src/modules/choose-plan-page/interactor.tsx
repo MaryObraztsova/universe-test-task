@@ -37,11 +37,6 @@ export const usePaymentPageInteractor = ({
   const  user  = useUserHook();
   const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
   const getPlans = useGetPlansHook({ products: Object.values(products) });
-  
-  // use query param as selected plan
-  // const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
-  //   PaymentPlanId.MONTHLY_FULL
-  // );
 
   const [file, setFile] = React.useState<ApiFile>();
   // @NOTE: generating cover for pdf-documents
