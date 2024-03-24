@@ -1,17 +1,15 @@
 // import { EDIT_FILENAME_LC_KEY, EDIT_FILE_LC_KEY } from '@/common/constants'
-import { useRemoteConfig } from "../../providers/remote-config-provider";
-import { useUser } from "../../providers/user-provider";
 import { API } from "../../services/api";
 import { ApiFile } from "../../services/api/types";
 import { generatePDFCover } from "../../use-cases/generate-pdf-cover";
 import {
   PaymentPlanId,
-  useGetSubscriptionProducts,
 } from "../../use-cases/get-subscription-products";
 import check from "./assets/check.svg";
 import cross from "./assets/cross.svg";
 import { useRouter } from "next/router";
 import React from "react";
+import { PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook } from './interactor.types';
 
 export enum PAGE_LINKS {
   MAIN = "/",
@@ -93,21 +91,30 @@ export interface IPaymentPageInteractor {
   getPlans: (t: (key: string) => string) => Plan[];
   isPlansLoading: boolean;
 }
+type UsePaymentPageInteractorArguments = {
+	useSubscriptionProductsHook: PaymentSubscriptionProductsHook;
+	useUserHook: PaymentUserHook;
+	useRemoteConfigHook: PaymentRemoteConfigHook;
+};
 
-export const usePaymentPageInteractor = (): IPaymentPageInteractor => {
+export const usePaymentPageInteractor = ({
+	useSubscriptionProductsHook,
+	useUserHook,
+	useRemoteConfigHook
+}: UsePaymentPageInteractorArguments): IPaymentPageInteractor => {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
     PaymentPlanId.MONTHLY_FULL
   );
-  const { products } = useGetSubscriptionProducts();
-  const { user } = useUser();
+  const { products } = useSubscriptionProductsHook();
+  const  user  = useUserHook();
 
   const [file, setFile] = React.useState<ApiFile>();
   const [imagePDF, setImagePDF] = React.useState<Blob | null>(null);
   const [isImageLoading, setIsImageLoading] = React.useState(false);
   const [fileLink, setFileLink] = React.useState<string | null>(null);
 
-  const { abTests, isRemoteConfigLoading } = useRemoteConfig();
+  const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
 
   const onCommentsFlip = () => {
     console.log("send event analytic0");

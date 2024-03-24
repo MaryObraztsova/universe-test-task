@@ -1,12 +1,14 @@
 import React, {useCallback, useContext, useEffect, useState} from "react";
 import { useRouter } from "next/router";
 
-interface RemoteConfigContext {
+export interface RemoteConfig {
   abTests: Record<string, string>
   featureFlags: Record<string, string>
   reloadConfig: () => void;
   isRemoteConfigLoading: boolean
 }
+
+interface RemoteConfigContext extends RemoteConfig {}
 
 const defaultContext: RemoteConfigContext = {
   abTests: {},
