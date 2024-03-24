@@ -3,6 +3,7 @@ import { useRemoteConfig } from '../../providers/remote-config-provider';
 import { useGetSubscriptionProducts } from "../../use-cases/get-subscription-products";
 import { useUserPaymentInfo } from './hooks';
 import { usePaymentPageInteractor } from "./interactor";
+import { interactorImagesFormat } from './interactor.config';
 import { PaymentPageRouter } from "./router";
 import React from "react";
 
@@ -11,7 +12,8 @@ export const PaymentPage: React.FC<IProps> = () => {
 	const interactor = usePaymentPageInteractor({
 		useSubscriptionProductsHook: useGetSubscriptionProducts,
 		useUserHook: useUserPaymentInfo,
-		useRemoteConfigHook: useRemoteConfig
+		useRemoteConfigHook: useRemoteConfig,
+    imagesFormat: interactorImagesFormat
 	});
 
   return (

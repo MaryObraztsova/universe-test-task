@@ -1,4 +1,3 @@
-// import { EDIT_FILENAME_LC_KEY, EDIT_FILE_LC_KEY } from '@/common/constants'
 import { API } from "../../services/api";
 import { ApiFile } from "../../services/api/types";
 import { generatePDFCover } from "../../use-cases/generate-pdf-cover";
@@ -10,6 +9,7 @@ import cross from "./assets/cross.svg";
 import { useRouter } from "next/router";
 import React from "react";
 import { PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook } from './interactor.types';
+import { InternalFileType } from '../../shared/types';
 
 export enum PAGE_LINKS {
   MAIN = "/",
@@ -17,41 +17,7 @@ export enum PAGE_LINKS {
   DASHBOARD = "/dashboard",
 }
 
-export enum InternalFileType {
-  DOC = "DOC",
-  DOCX = "DOCX",
-  JPEG = "JPEG",
-  JPG = "JPG",
-  HEIC = "HEIC",
-  HEIF = "HEIF",
-  PDF = "PDF",
-  PNG = "PNG",
-  PPT = "PPT",
-  PPTX = "PPTX",
-  XLS = "XLS",
-  XLSX = "XLSX",
-  ZIP = "ZIP",
-  BMP = "BMP",
-  EPS = "EPS",
-  GIF = "GIF",
-  SVG = "SVG",
-  TIFF = "TIFF",
-  WEBP = "WEBP",
-  EPUB = "EPUB",
-}
 
-export const imagesFormat = [
-  InternalFileType.HEIC,
-  InternalFileType.SVG,
-  InternalFileType.PNG,
-  InternalFileType.BMP,
-  InternalFileType.EPS,
-  InternalFileType.GIF,
-  InternalFileType.TIFF,
-  InternalFileType.WEBP,
-  InternalFileType.JPG,
-  InternalFileType.JPEG,
-];
 
 export type Bullets = {
   imgSrc: string;
@@ -95,12 +61,14 @@ type UsePaymentPageInteractorArguments = {
 	useSubscriptionProductsHook: PaymentSubscriptionProductsHook;
 	useUserHook: PaymentUserHook;
 	useRemoteConfigHook: PaymentRemoteConfigHook;
+  imagesFormat: InternalFileType[];
 };
 
 export const usePaymentPageInteractor = ({
 	useSubscriptionProductsHook,
 	useUserHook,
-	useRemoteConfigHook
+	useRemoteConfigHook,
+  imagesFormat,
 }: UsePaymentPageInteractorArguments): IPaymentPageInteractor => {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
@@ -108,7 +76,6 @@ export const usePaymentPageInteractor = ({
   );
   const { products } = useSubscriptionProductsHook();
   const  user  = useUserHook();
-
   const [file, setFile] = React.useState<ApiFile>();
   const [imagePDF, setImagePDF] = React.useState<Blob | null>(null);
   const [isImageLoading, setIsImageLoading] = React.useState(false);
