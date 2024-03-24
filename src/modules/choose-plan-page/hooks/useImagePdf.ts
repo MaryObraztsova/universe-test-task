@@ -13,7 +13,7 @@ export const useImagePdf: ImagePdfHook = (file) => {
 
   const loadPdfCover = useCallback(async () => {
     if (!file || file.internal_type !== "PDF") {
-      throw new Error("File is missed or not a PDF format");
+     return;
     }
 
     setIsImageLoading(true);
@@ -47,12 +47,8 @@ export const useImagePdf: ImagePdfHook = (file) => {
   ]);
 
   useEffect(() => {
-    if(!file){
-        return;
-    }
-  
     loadPdfCover();
-  }, [loadPdfCover, file]);
+  }, [loadPdfCover]);
 
   return useMemo(() => ({imagePDF, isImageLoading}), [imagePDF, isImageLoading]);
 }

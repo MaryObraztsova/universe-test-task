@@ -6,7 +6,7 @@ import {
 } from "../../use-cases/get-subscription-products";
 import { useRouter } from "next/router";
 import React from "react";
-import { GetPlansHook, ImagePdfHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
+import { FileLinkHook, GetPlansHook, ImagePdfHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
 import { InternalFileType } from '../../shared/types';
 import { PageLinks } from '../../shared/routes';
 
@@ -18,6 +18,7 @@ type UsePaymentPageInteractorArguments = {
 	useRemoteConfigHook: PaymentRemoteConfigHook;
   useGetPlansHook: GetPlansHook;
   useImagePdfHook: ImagePdfHook;
+  useFileLinkHook: FileLinkHook;
 };
 
 export const usePaymentPageInteractor = ({
@@ -25,8 +26,9 @@ export const usePaymentPageInteractor = ({
 	useUserHook,
 	useRemoteConfigHook,
   useGetPlansHook,
-  imagesFormat,
   useImagePdfHook,
+  useFileLinkHook,
+  imagesFormat
 }: UsePaymentPageInteractorArguments) => {
   const router = useRouter();
 
@@ -42,7 +44,7 @@ export const usePaymentPageInteractor = ({
   const [file, setFile] = React.useState<ApiFile>();
   // @NOTE: generating cover for pdf-documents
   const { imagePDF, isImageLoading } = useImagePdfHook(file)
-  const [fileLink, setFileLink] = React.useState<string | null>(null);
+  const {fileLink} = useFileLinkHook({file, imagesFormat});
 
 
   const onCommentsFlip = () => {
@@ -84,36 +86,6 @@ export const usePaymentPageInteractor = ({
     router.push({ pathname: `${PageLinks.PAYMENT}`, query: router.query });
   };
 
-  const loadImageCover = async () => {
-    if (
-      !file ||
-      !imagesFormat.includes(file.internal_type) ||
-      // @NOTE: this two checks fir filename exists because sometimes OS do not pass file.type correctly
-      !imagesFormat.includes(
-        file.filename.slice(-3).toUpperCase() as InternalFileType
-      ) ||
-      !imagesFormat.includes(
-        file.filename.slice(-4).toUpperCase() as InternalFileType
-      )
-    ) {
-      return;
-    }
-    const fileUrl = await (async () => {
-      if (router.query?.file) {
-        return router.query.editedFile === "true"
-          ? API.files.editedFile(router.query.file as string).then((r) => r.url)
-          : API.files
-              .downloadFile(router.query.file as string)
-              .then((r) => r.url);
-      }
-
-      return API.files.downloadFile(file.id).then((r) => r.url);
-    })();
-
-    setFileLink(fileUrl);
-  };
-
-
   React.useEffect(() => {
     if (user?.subscription !== null) {
       router.push(`${PageLinks.DASHBOARD}`);
@@ -134,7 +106,6 @@ export const usePaymentPageInteractor = ({
     }
   }, [user?.subscription, user?.email, router.query?.token]);
   
-
     // @NOTE: analytics on page rendered
   React.useEffect(() => {
     if (!localStorage.getItem("select_plan_view")) {
@@ -172,10 +143,6 @@ export const usePaymentPageInteractor = ({
     }
   }, [abTests]);
 
-  React.useEffect(() => {
-    loadImageCover();
-  }, [loadImageCover]);
-
   return {
     selectedPlan,
     onSelectPlan,
@@ -184,20 +151,20 @@ export const usePaymentPageInteractor = ({
 
     imagePDF,
     isImageLoading,
-    fileName: file ? file.filename : null,
-    fileType: file ? file.internal_type : null,
+    fileName: file?.filename ?? null,
+    fileType: file?.internal_type ?? null,
     fileLink,
     isEditorFlow:
       (router.query?.source === "editor" ||
         router.query?.source === "account") &&
-      router.query.convertedFrom === undefined,
+      !router.query?.convertedFrom,
     isSecondEmail: router.query?.fromEmail === "true",
     isThirdEmail: router.query?.fromEmail === "true",
 
     isRemoteConfigLoading,
 
     getPlans,
-    isPlansLoading: products.length === 0,
+    isPlansLoading: !products.length,
   };
 };
 

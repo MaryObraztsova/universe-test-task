@@ -74,7 +74,7 @@ export const PaymentPageRouter: React.FC<IProps> = ({ interactor, header }) => {
 
   const renderImage = React.useCallback(() => {
     if (isPDFFile) {
-      if (imagePDF !== null) {
+      if (!!imagePDF) {
         return (
           <Image
             src={URL.createObjectURL(imagePDF)}
@@ -85,7 +85,7 @@ export const PaymentPageRouter: React.FC<IProps> = ({ interactor, header }) => {
         );
       }
 
-      if (imagePDF === null && !isImageLoading) {
+      if (!imagePDF && !isImageLoading) {
         return <Image src={fake_file} alt="fake_file" />;
       }
 
