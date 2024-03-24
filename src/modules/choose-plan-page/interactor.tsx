@@ -5,11 +5,12 @@ import {
   PaymentPlanId,
 } from "../../use-cases/get-subscription-products";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { FileLinkHook, GetPlansHook, ImagePdfHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
 import { InternalFileType } from '../../shared/types';
 import { PageLinks } from '../../shared/routes';
-
+import { useSearchParams } from 'next/navigation'
+import { SELECTED_PLAN_SEARCH_KEY } from './interactor.config';
 
 type UsePaymentPageInteractorArguments = {
   imagesFormat: InternalFileType[];
@@ -38,33 +39,47 @@ export const usePaymentPageInteractor = ({
   const getPlans = useGetPlansHook({ products: Object.values(products) });
   
   // use query param as selected plan
-  const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
-    PaymentPlanId.MONTHLY_FULL
-  );
+  // const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
+  //   PaymentPlanId.MONTHLY_FULL
+  // );
+
   const [file, setFile] = React.useState<ApiFile>();
   // @NOTE: generating cover for pdf-documents
   const { imagePDF, isImageLoading } = useImagePdfHook(file)
   const {fileLink} = useFileLinkHook({file, imagesFormat});
 
+const selectedPlan = useMemo(() => {
+  // TODO: add searchParam parse via zod to remove "as"
+  return router.query?.[SELECTED_PLAN_SEARCH_KEY] as PaymentPlanId || PaymentPlanId.MONTHLY_FULL
+},[
+  router.query
+]);
+
+const handleUpdatePlanQueryValue = useCallback(async (plan: PaymentPlanId) => {
+  await router.replace({
+    query: {
+      ...router.query,
+      [SELECTED_PLAN_SEARCH_KEY]: plan
+    }
+  })
+},[]);
 
   const onCommentsFlip = () => {
     console.log("send event analytic0");
   };
 
-  const onSelectPlan = (plan: PaymentPlanId) => {
+  const onSelectPlan = useCallback(async (plan: PaymentPlanId) => {
     if (selectedPlan === plan) {
-      setSelectedPlan(plan);
       onContinue("planTab");
-
       return;
     }
-
-    setSelectedPlan(plan);
     const product = products[plan]
 
     if(!product){
       throw new Error('Unknown product as selected plan')
     }
+
+    await handleUpdatePlanQueryValue(plan)
 
     console.log(
       "send event analytic1",
@@ -75,7 +90,11 @@ export const usePaymentPageInteractor = ({
       "value: ",
       (product.price.price || 0) / 100
     );
-  };
+  },[
+    selectedPlan,
+    products,
+    handleUpdatePlanQueryValue
+  ])
 
   const onContinue = (place?: string) => {
     console.log(
@@ -142,10 +161,11 @@ export const usePaymentPageInteractor = ({
 
   // @NOTE: setting pre-select plan for users from remarketing emails
   React.useEffect(() => {
-    if (router.query?.fromEmail === "true") {
-      setSelectedPlan(PaymentPlanId.MONTHLY_FULL_SECOND_EMAIL);
+    if (router.query?.fromEmail !== "true") {
       return;
     }
+
+    handleUpdatePlanQueryValue(PaymentPlanId.MONTHLY_FULL)
   }, [abTests]);
 
   return {

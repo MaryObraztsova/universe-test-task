@@ -4,6 +4,8 @@ import check from "./assets/check.svg";
 import cross from "./assets/cross.svg";
 import { Bullet } from './interactor.types';
 
+export const SELECTED_PLAN_SEARCH_KEY = 'plan';
+
 export const interactorImagesFormat = [
   InternalFileType.HEIC,
   InternalFileType.SVG,
