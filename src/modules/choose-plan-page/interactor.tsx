@@ -6,7 +6,7 @@ import {
 } from "../../use-cases/get-subscription-products";
 import { useRouter } from "next/router";
 import React from "react";
-import { GetPlansHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
+import { GetPlansHook, ImagePdfHook, PaymentRemoteConfigHook, PaymentSubscriptionProductsHook, PaymentUserHook, Plan } from './interactor.types';
 import { InternalFileType } from '../../shared/types';
 import { PageLinks } from '../../shared/routes';
 
@@ -17,6 +17,7 @@ type UsePaymentPageInteractorArguments = {
 	useUserHook: PaymentUserHook;
 	useRemoteConfigHook: PaymentRemoteConfigHook;
   useGetPlansHook: GetPlansHook;
+  useImagePdfHook: ImagePdfHook;
 };
 
 export const usePaymentPageInteractor = ({
@@ -25,21 +26,22 @@ export const usePaymentPageInteractor = ({
 	useRemoteConfigHook,
   useGetPlansHook,
   imagesFormat,
+  useImagePdfHook,
 }: UsePaymentPageInteractorArguments) => {
   const router = useRouter();
 
   const { products } = useSubscriptionProductsHook();
   const  user  = useUserHook();
   const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
+  const getPlans = useGetPlansHook({ products });
   
   // use query param as selected plan
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
     PaymentPlanId.MONTHLY_FULL
   );
   const [file, setFile] = React.useState<ApiFile>();
-  // TODO: incapsulate PDf and FileLink into separate hooks 
-  const [imagePDF, setImagePDF] = React.useState<Blob | null>(null);
-  const [isImageLoading, setIsImageLoading] = React.useState(false);
+  // @NOTE: generating cover for pdf-documents
+  const { imagePDF, isImageLoading } = useImagePdfHook(file)
   const [fileLink, setFileLink] = React.useState<string | null>(null);
 
 
@@ -82,39 +84,6 @@ export const usePaymentPageInteractor = ({
     router.push({ pathname: `${PageLinks.PAYMENT}`, query: router.query });
   };
 
-  // @NOTE: generating cover for pdf-documents
-  const loadPdfCover = async (): Promise<void> => {
-    if (!file || file.internal_type !== "PDF") {
-      return;
-    }
-
-    setIsImageLoading(true);
-
-    try {
-      const fileUrl = await (async () => {
-        if (router.query?.file) {
-          return router.query.editedFile === "true"
-            ? API.files
-                .editedFile(router.query.file as string)
-                .then((r) => r.url)
-            : API.files
-                .downloadFile(router.query.file as string)
-                .then((r) => r.url);
-        }
-
-        return API.files.downloadFile(file.id).then((r) => r.url);
-      })();
-
-      const pdfCover = await generatePDFCover({
-        pdfFileUrl: fileUrl,
-        width: 640,
-      });
-      setImagePDF(pdfCover);
-    } finally {
-      setIsImageLoading(false);
-    }
-  };
-
   const loadImageCover = async () => {
     if (
       !file ||
@@ -144,7 +113,6 @@ export const usePaymentPageInteractor = ({
     setFileLink(fileUrl);
   };
 
-  const getPlans = useGetPlansHook({ products });
 
   React.useEffect(() => {
     if (user?.subscription !== null) {
@@ -205,9 +173,8 @@ export const usePaymentPageInteractor = ({
   }, [abTests]);
 
   React.useEffect(() => {
-    loadPdfCover();
     loadImageCover();
-  }, [loadImageCover, loadPdfCover]);
+  }, [loadImageCover]);
 
   return {
     selectedPlan,
@@ -215,7 +182,7 @@ export const usePaymentPageInteractor = ({
     onContinue,
     onCommentsFlip,
 
-    imagePDF: imagePDF ? imagePDF : null,
+    imagePDF,
     isImageLoading,
     fileName: file ? file.filename : null,
     fileType: file ? file.internal_type : null,

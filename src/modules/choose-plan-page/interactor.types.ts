@@ -2,6 +2,7 @@ import { TFunction } from 'i18next';
 import { RemoteConfig } from '../../providers/remote-config-provider';
 import { User } from '../../providers/user-provider';
 import { PaymentPlanId, Product } from '../../use-cases/get-subscription-products';
+import { ApiFile } from '../../services/api/types';
 
 export type Bullet = {
   imgSrc: string;
@@ -32,3 +33,5 @@ export type GetPlanHookArguments = {
 }
 
 export type GetPlansHook = (args: GetPlanHookArguments) => (t: TFunction) => Plan[]
+
+export type ImagePdfHook = (file: ApiFile) => {imagePDF: Blob | null, isImageLoading: boolean};

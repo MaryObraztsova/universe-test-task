@@ -1,11 +1,11 @@
 import { PaymentPlanId, Product } from '../../../use-cases/get-subscription-products';
 import { Plan, GetPlansHook } from '../interactor.types';
 import { getAnnualFormattedPrice, getCurrency, getTrialFormattedPrice } from '../../../shared/utils';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { BULLETS_BY_PLAN_ID } from '../interactor.config';
 
-export const useGetPlans: GetPlansHook = ({products}) => (t) => {
-  return useMemo(() => {
+export const useGetPlans: GetPlansHook = ({products}) => {
+  return useCallback((t) => {
     return products.reduce<Plan[]>((acc, product: Product) => {
       if(product.name === PaymentPlanId.MONTHLY) {
         acc.push({
@@ -78,5 +78,7 @@ export const useGetPlans: GetPlansHook = ({products}) => (t) => {
   
       return acc
     },[])
-  }, [products]);
-  };
+},[
+  products,
+])
+}
