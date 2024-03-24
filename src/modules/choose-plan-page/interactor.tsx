@@ -35,7 +35,7 @@ export const usePaymentPageInteractor = ({
   const { products } = useSubscriptionProductsHook();
   const  user  = useUserHook();
   const { abTests, isRemoteConfigLoading } = useRemoteConfigHook();
-  const getPlans = useGetPlansHook({ products });
+  const getPlans = useGetPlansHook({ products: Object.values(products) });
   
   // use query param as selected plan
   const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlanId>(
@@ -58,17 +58,22 @@ export const usePaymentPageInteractor = ({
 
       return;
     }
+
     setSelectedPlan(plan);
-    const product = products?.find((item) => item.name === plan);
+    const product = products[plan]
+
+    if(!product){
+      throw new Error('Unknown product as selected plan')
+    }
 
     console.log(
       "send event analytic1",
       "productId: ",
       plan,
       "currency: ",
-      product?.price?.currency || "USD",
+      product.price.currency || "USD",
       "value: ",
-      (product?.price?.price || 0) / 100
+      (product.price.price || 0) / 100
     );
   };
 
@@ -164,7 +169,7 @@ export const usePaymentPageInteractor = ({
     isRemoteConfigLoading,
 
     getPlans,
-    isPlansLoading: !products.length,
+    isPlansLoading: Object.values(products).length === 0,
   };
 };
 

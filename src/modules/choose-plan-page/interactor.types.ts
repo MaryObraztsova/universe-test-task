@@ -23,7 +23,7 @@ export interface Plan {
   fullPrice?: string;
 }
 
-export type PaymentSubscriptionProductsHook = () => {products: Product[]};
+export type PaymentSubscriptionProductsHook = () => {products: Record<PaymentPlanId, Product>};
 
 export type PaymentUserHook = () => Pick<User, 'email' | 'subscription'>;
 
